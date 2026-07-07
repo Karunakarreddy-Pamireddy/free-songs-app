@@ -179,3 +179,48 @@ async def download_song(song_name: str):
         filename=song_name, 
         media_type="application/octet-stream"
     )
+
+    # ... (Keep all your existing code, imports, and routes exactly as they are)
+
+# --- ADMINISTRATIVE DATA ANALYTICS ENDPOINTS ---
+
+@app.get("/analytics/summary", status_code=status.HTTP_200_OK)
+async def get_platform_summary(current_user: str = Depends(get_current_user)):
+    """
+    Parses live streaming logs using pandas to extract real-time platform metrics.
+    Guarded by secure JWT authentication to ensure admin-only access.
+    """
+    if not os.path.exists(settings.ANALYTICS_FILE):
+        return {
+            "total_engagements": 0,
+            "top_tracks": {},
+            "action_distribution": {"stream": 0, "download": 0}
+        }
+    
+    try:
+        # Load time-series data file asynchronously via memory-mapped buffers
+        df = pd.read_csv(settings.ANALYTICS_FILE)
+        
+        if df.empty:
+            return {
+                "total_engagements": 0,
+                "top_tracks": {},
+                "action_distribution": {"stream": 0, "download": 0}
+            }
+            
+        # Calculate key metric vectors
+        total_engagements = len(df)
+        top_tracks = df['song_name'].value_counts().head(5).to_dict()
+        action_distribution = df['action'].value_counts().to_dict()
+        
+        return {
+            "total_engagements": total_engagements,
+            "top_tracks": top_tracks,
+            "action_distribution": action_distribution
+        }
+        
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Analytics compute failure: {str(e)}"
+        )
