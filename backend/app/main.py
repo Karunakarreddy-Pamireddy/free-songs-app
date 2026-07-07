@@ -233,3 +233,53 @@ async def get_current_user(
         raise HTTPException(status_code=401, detail="Could not validate credentials")
 
 # ... (Keep your /upload-song/, /stream/, /download/, and /analytics/ summary routes exactly as they are!)
+
+# ... (Keep all your existing top imports exactly the same)
+from app.rate_limiter import rate_limit_guard  # <-- Add this import statement
+
+# ... (Keep your tables compilation, app initialization, and /token /upload routes exactly as they are)
+
+# --- REFACTORED HIGH-PERFORMANCE AUDIO STREAMING ROUTER ---
+
+@app.get("/stream/{song_name}")
+async def stream_song(
+    song_name: str, 
+    _ = Depends(rate_limit_guard)  # <-- Inject the rate-limit guard dependency right here!
+):
+    """Streams audio files asynchronously in chunks while being guarded by active rate-limiting."""
+    file_path = os.path.join(settings.SONGS_DIR, song_name)
+    
+    if not os.path.exists(file_path):
+        raise HTTPException(status_code=404, detail="Requested song file not found on server")
+    
+    log_user_activity(song_name=song_name, action_type="stream")
+    
+    def chunk_generator():
+        with open(file_path, mode="rb") as audio_file:
+            while chunk := audio_file.read(1024 * 64):
+                yield chunk
+
+    return StreamingResponse(chunk_generator(), media_type="audio/mpeg")
+
+
+@app.get("/download/{song_name}")
+async def download_song(
+    song_name: str, 
+    _ = Depends(rate_limit_guard)  # <-- Inject the rate-limit guard dependency right here!
+):
+    """Delivers the audio asset as an attachment while being guarded by active rate-limiting."""
+    file_path = os.path.join(settings.SONGS_DIR, song_name)
+    
+    if not os.path.exists(file_path):
+        raise HTTPException(status_code=404, detail="Requested song file not found on server")
+        
+    log_user_activity(song_name=song_name, action_type="download")
+        
+    return FileResponse(
+        path=file_path, 
+        filename=song_name, 
+        media_type="application/octet-stream"
+    )
+
+# ... (Leave the remaining analytics summary endpoint code at the bottom completely untouched)
+
