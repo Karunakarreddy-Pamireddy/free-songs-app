@@ -134,3 +134,48 @@ async def upload_song(
 
 # --- HIGH-PERFORMANCE AUDIO STREAMING ROUTE ---
 # ... (Keep your @app.get("/stream/{song_name}") and @app.get("/download/{song_name}") from Day 4)
+
+
+# ... (Keep all your existing configuration, auth, and upload imports at the top)
+from app.analytics_engine import log_user_activity  # <-- Add this new import statement
+
+# ... (Keep your /token, get_current_user, and /upload-song/ endpoints exactly as they are)
+
+# --- HIGH-PERFORMANCE AUDIO STREAMING ROUTER ---
+
+@app.get("/stream/{song_name}")
+async def stream_song(song_name: str):
+    """Streams audio files asynchronously in chunks while logging streaming telemetry."""
+    file_path = os.path.join(settings.SONGS_DIR, song_name)
+    
+    if not os.path.exists(file_path):
+        raise HTTPException(status_code=404, detail="Requested song file not found on server")
+    
+    # Trigger tracking engine hook for real-time analytics
+    log_user_activity(song_name=song_name, action_type="stream")  # <-- Add this tracking hook
+    
+    def chunk_generator():
+        with open(file_path, mode="rb") as audio_file:
+            while chunk := audio_file.read(1024 * 64):
+                yield chunk
+
+    return StreamingResponse(chunk_generator(), media_type="audio/mpeg")
+
+# --- FILE DOWNLOAD ROUTER ---
+
+@app.get("/download/{song_name}")
+async def download_song(song_name: str):
+    """Delivers the audio asset as an attachment while logging download telemetry."""
+    file_path = os.path.join(settings.SONGS_DIR, song_name)
+    
+    if not os.path.exists(file_path):
+        raise HTTPException(status_code=404, detail="Requested song file not found on server")
+        
+    # Trigger tracking engine hook for real-time analytics
+    log_user_activity(song_name=song_name, action_type="download")  # <-- Add this tracking hook
+        
+    return FileResponse(
+        path=file_path, 
+        filename=song_name, 
+        media_type="application/octet-stream"
+    )
