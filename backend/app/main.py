@@ -224,3 +224,61 @@ async def get_platform_summary(current_user: str = Depends(get_current_user)):
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Analytics compute failure: {str(e)}"
         )
+
+        from typing import Optional  # <-- Ensure this is imported at the top of your file if not already present
+
+# --- UPGRADED ADMINISTRATIVE DATA ANALYTICS ENDPOINT ---
+
+@app.get("/analytics/summary", status_code=status.HTTP_200_OK)
+async def get_platform_summary(
+    window_days: Optional[int] = None,  # <-- New query parameter (e.g., ?window_days=7)
+    current_user: str = Depends(get_current_user)
+):
+    """
+    Parses and filters live tracking logs within a dynamic time window using pandas.
+    Allows administrators to look back at trends from specific windows (e.g., last 1, 7, or 30 days).
+    """
+    if not os.path.exists(settings.ANALYTICS_FILE):
+        return {
+            "total_engagements": 0,
+            "top_tracks": {},
+            "action_distribution": {"stream": 0, "download": 0}
+        }
+    
+    try:
+        # Load telemetry log file
+        df = pd.read_csv(settings.ANALYTICS_FILE)
+        
+        if df.empty:
+            return {
+                "total_engagements": 0,
+                "top_tracks": {},
+                "action_distribution": {"stream": 0, "download": 0}
+            }
+            
+        # Convert timestamp column strings to formal pandas datetime objects
+        df['timestamp'] = pd.to_datetime(df['timestamp'])
+        
+        # Apply time-window constraint if parameter is passed by the administrator
+        if window_days is not None:
+            now = pd.Timestamp.now(tz='UTC').tz_localize(None) # Match timezone-naive formatting from our engine logs
+            start_bound = now - pd.Timedelta(days=window_days)
+            df = df[df['timestamp'] >= start_bound]
+            
+        # Re-calculate filtered performance metrics
+        total_engagements = len(df)
+        top_tracks = df['song_name'].value_counts().head(5).to_dict()
+        action_distribution = df['action'].value_counts().to_dict()
+        
+        return {
+            "time_window_applied": f"{window_days} days" if window_days else "All-Time",
+            "total_engagements": total_engagements,
+            "top_tracks": top_tracks,
+            "action_distribution": action_distribution
+        }
+        
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Time-series window calculation failure: {str(e)}"
+        )
