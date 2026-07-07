@@ -91,3 +91,46 @@ async def download_song(song_name: str):
         filename=song_name, 
         media_type="application/octet-stream"
     )
+
+
+
+# ... (Keep all your Day 4 imports, configurations, and authentication routes exactly the same)
+
+# --- MUSIC & AUTOMATED UPLOAD ENDPOINTS ---
+
+@app.post("/upload-song/", status_code=status.HTTP_201_CREATED)
+async def upload_song(
+    file: UploadFile = File(...), 
+    current_user: str = Depends(get_current_user)
+):
+    """
+    Automated backend endpoint for AI systems or upload bots.
+    Requires a valid JWT Bearer Token in the authorization header.
+    """
+    # Ensure target storage volume exists
+    os.makedirs(settings.SONGS_DIR, exist_ok=True)
+    
+    # Clean the file name and establish the target write path
+    file_path = os.path.join(settings.SONGS_DIR, file.filename)
+    
+    # Read incoming binary data stream and write it asynchronously to storage
+    try:
+        with open(file_path, "wb") as buffer:
+            # Read and write chunks to handle large audio files smoothly
+            while content := await file.read(1024 * 64):  # 64 KB chunks
+                buffer.write(content)
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to write audio asset to disk: {str(e)}"
+        )
+        
+    return {
+        "status": "success",
+        "filename": file.filename,
+        "uploader": current_user,
+        "message": "Audio asset automatically ingested to cloud storage disk."
+    }
+
+# --- HIGH-PERFORMANCE AUDIO STREAMING ROUTE ---
+# ... (Keep your @app.get("/stream/{song_name}") and @app.get("/download/{song_name}") from Day 4)
