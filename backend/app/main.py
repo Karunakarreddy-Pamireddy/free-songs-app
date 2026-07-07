@@ -1,19 +1,24 @@
 import os
+from typing import Optional
+from datetime import datetime, timezone
+import pandas as pd
+import jwt
+
 from fastapi import FastAPI, Depends, HTTPException, status, File, UploadFile
 from fastapi.responses import StreamingResponse, FileResponse
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from fastapi.middleware.cors import CORSMiddleware
-import jwt
 
 from app.config import settings
 from app.auth import verify_password, create_access_token, pwd_context
+from app.analytics_engine import log_user_activity
 
 app = FastAPI(
     title="FreeSongs API", 
     description="High-performance asynchronous streaming engine with automated AI upload endpoints."
 )
 
-# Cross-Origin Resource Sharing configuration allowing your web and mobile apps to communicate safely
+# Cross-Origin Resource Sharing (CORS) Configuration
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -24,12 +29,12 @@ app.add_middleware(
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
-# Secure Seed Application Administrator Credentials (We will port this to an DB layer on Day 12)
+# Static Administration Credential Database Seed
 USER_DB = {
     "admin": pwd_context.hash("admin123")
 }
 
-# --- AUTHENTICATION ROUTE ---
+# --- AUTHENTICATION DEPENDENCY ROUTING ---
 
 @app.post("/token")
 async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends()):
@@ -55,68 +60,19 @@ async def get_current_user(token: str = Depends(oauth2_scheme)):
     except jwt.PyJWTError:
         raise HTTPException(status_code=401, detail="Could not validate credentials")
 
-# --- HIGH-PERFORMANCE AUDIO STREAMING ROUTE ---
-
-@app.get("/stream/{song_name}")
-async def stream_song(song_name: str):
-    """
-    Streams audio files asynchronously in chunks.
-    Prevents server memory exhaustion and eliminates buffering lags.
-    """
-    file_path = os.path.join(settings.SONGS_DIR, song_name)
-    
-    if not os.path.exists(file_path):
-        raise HTTPException(status_code=404, detail="Requested song file not found on server")
-    
-    # Asynchronous generator to read the audio track in chunks (1024 bytes per step)
-    def chunk_generator():
-        with open(file_path, mode="rb") as audio_file:
-            while chunk := audio_file.read(1024 * 64):  # 64 KB Chunks
-                yield chunk
-
-    return StreamingResponse(chunk_generator(), media_type="audio/mpeg")
-
-# --- FILE DOWNLOAD ROUTE ---
-
-@app.get("/download/{song_name}")
-async def download_song(song_name: str):
-    """Directly delivers the audio asset as a single clean downloadable file attachment."""
-    file_path = os.path.join(settings.SONGS_DIR, song_name)
-    
-    if not os.path.exists(file_path):
-        raise HTTPException(status_code=404, detail="Requested song file not found on server")
-        
-    return FileResponse(
-        path=file_path, 
-        filename=song_name, 
-        media_type="application/octet-stream"
-    )
-
-
-
-# ... (Keep all your Day 4 imports, configurations, and authentication routes exactly the same)
-
-# --- MUSIC & AUTOMATED UPLOAD ENDPOINTS ---
+# --- MUSIC & AUTOMATED UPLOAD ROUTES ---
 
 @app.post("/upload-song/", status_code=status.HTTP_201_CREATED)
 async def upload_song(
     file: UploadFile = File(...), 
     current_user: str = Depends(get_current_user)
 ):
-    """
-    Automated backend endpoint for AI systems or upload bots.
-    Requires a valid JWT Bearer Token in the authorization header.
-    """
-    # Ensure target storage volume exists
+    """Automated backend endpoint for AI systems or upload bots."""
     os.makedirs(settings.SONGS_DIR, exist_ok=True)
-    
-    # Clean the file name and establish the target write path
     file_path = os.path.join(settings.SONGS_DIR, file.filename)
     
-    # Read incoming binary data stream and write it asynchronously to storage
     try:
         with open(file_path, "wb") as buffer:
-            # Read and write chunks to handle large audio files smoothly
             while content := await file.read(1024 * 64):  # 64 KB chunks
                 buffer.write(content)
     except Exception as e:
@@ -132,27 +88,15 @@ async def upload_song(
         "message": "Audio asset automatically ingested to cloud storage disk."
     }
 
-# --- HIGH-PERFORMANCE AUDIO STREAMING ROUTE ---
-# ... (Keep your @app.get("/stream/{song_name}") and @app.get("/download/{song_name}") from Day 4)
-
-
-# ... (Keep all your existing configuration, auth, and upload imports at the top)
-from app.analytics_engine import log_user_activity  # <-- Add this new import statement
-
-# ... (Keep your /token, get_current_user, and /upload-song/ endpoints exactly as they are)
-
-# --- HIGH-PERFORMANCE AUDIO STREAMING ROUTER ---
-
 @app.get("/stream/{song_name}")
 async def stream_song(song_name: str):
-    """Streams audio files asynchronously in chunks while logging streaming telemetry."""
+    """Streams audio files asynchronously in chunks while logging telemetry."""
     file_path = os.path.join(settings.SONGS_DIR, song_name)
     
     if not os.path.exists(file_path):
         raise HTTPException(status_code=404, detail="Requested song file not found on server")
     
-    # Trigger tracking engine hook for real-time analytics
-    log_user_activity(song_name=song_name, action_type="stream")  # <-- Add this tracking hook
+    log_user_activity(song_name=song_name, action_type="stream")
     
     def chunk_generator():
         with open(file_path, mode="rb") as audio_file:
@@ -160,8 +104,6 @@ async def stream_song(song_name: str):
                 yield chunk
 
     return StreamingResponse(chunk_generator(), media_type="audio/mpeg")
-
-# --- FILE DOWNLOAD ROUTER ---
 
 @app.get("/download/{song_name}")
 async def download_song(song_name: str):
@@ -171,8 +113,7 @@ async def download_song(song_name: str):
     if not os.path.exists(file_path):
         raise HTTPException(status_code=404, detail="Requested song file not found on server")
         
-    # Trigger tracking engine hook for real-time analytics
-    log_user_activity(song_name=song_name, action_type="download")  # <-- Add this tracking hook
+    log_user_activity(song_name=song_name, action_type="download")
         
     return FileResponse(
         path=file_path, 
@@ -180,64 +121,14 @@ async def download_song(song_name: str):
         media_type="application/octet-stream"
     )
 
-    # ... (Keep all your existing code, imports, and routes exactly as they are)
-
-# --- ADMINISTRATIVE DATA ANALYTICS ENDPOINTS ---
-
-@app.get("/analytics/summary", status_code=status.HTTP_200_OK)
-async def get_platform_summary(current_user: str = Depends(get_current_user)):
-    """
-    Parses live streaming logs using pandas to extract real-time platform metrics.
-    Guarded by secure JWT authentication to ensure admin-only access.
-    """
-    if not os.path.exists(settings.ANALYTICS_FILE):
-        return {
-            "total_engagements": 0,
-            "top_tracks": {},
-            "action_distribution": {"stream": 0, "download": 0}
-        }
-    
-    try:
-        # Load time-series data file asynchronously via memory-mapped buffers
-        df = pd.read_csv(settings.ANALYTICS_FILE)
-        
-        if df.empty:
-            return {
-                "total_engagements": 0,
-                "top_tracks": {},
-                "action_distribution": {"stream": 0, "download": 0}
-            }
-            
-        # Calculate key metric vectors
-        total_engagements = len(df)
-        top_tracks = df['song_name'].value_counts().head(5).to_dict()
-        action_distribution = df['action'].value_counts().to_dict()
-        
-        return {
-            "total_engagements": total_engagements,
-            "top_tracks": top_tracks,
-            "action_distribution": action_distribution
-        }
-        
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Analytics compute failure: {str(e)}"
-        )
-
-        from typing import Optional  # <-- Ensure this is imported at the top of your file if not already present
-
-# --- UPGRADED ADMINISTRATIVE DATA ANALYTICS ENDPOINT ---
+# --- ADMINISTRATIVE DATA ANALYTICS ROUTES ---
 
 @app.get("/analytics/summary", status_code=status.HTTP_200_OK)
 async def get_platform_summary(
-    window_days: Optional[int] = None,  # <-- New query parameter (e.g., ?window_days=7)
+    window_days: Optional[int] = None,
     current_user: str = Depends(get_current_user)
 ):
-    """
-    Parses and filters live tracking logs within a dynamic time window using pandas.
-    Allows administrators to look back at trends from specific windows (e.g., last 1, 7, or 30 days).
-    """
+    """Parses and filters live tracking logs within a dynamic time window using pandas."""
     if not os.path.exists(settings.ANALYTICS_FILE):
         return {
             "total_engagements": 0,
@@ -246,9 +137,7 @@ async def get_platform_summary(
         }
     
     try:
-        # Load telemetry log file
         df = pd.read_csv(settings.ANALYTICS_FILE)
-        
         if df.empty:
             return {
                 "total_engagements": 0,
@@ -256,16 +145,13 @@ async def get_platform_summary(
                 "action_distribution": {"stream": 0, "download": 0}
             }
             
-        # Convert timestamp column strings to formal pandas datetime objects
         df['timestamp'] = pd.to_datetime(df['timestamp'])
         
-        # Apply time-window constraint if parameter is passed by the administrator
         if window_days is not None:
-            now = pd.Timestamp.now(tz='UTC').tz_localize(None) # Match timezone-naive formatting from our engine logs
+            now = pd.Timestamp.now(tz='UTC').tz_localize(None)
             start_bound = now - pd.Timedelta(days=window_days)
             df = df[df['timestamp'] >= start_bound]
             
-        # Re-calculate filtered performance metrics
         total_engagements = len(df)
         top_tracks = df['song_name'].value_counts().head(5).to_dict()
         action_distribution = df['action'].value_counts().to_dict()
@@ -282,3 +168,68 @@ async def get_platform_summary(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Time-series window calculation failure: {str(e)}"
         )
+
+    # ... (Keep your top import blocks, but add these database imports)
+from sqlalchemy.orm import Session
+from app.database import engine, Base, get_db
+from app.models import DBUser
+
+# Generate the physical tables automatically on server launch if they don't exist
+Base.metadata.create_all(bind=engine)
+
+app = FastAPI(title="FreeSongs API")
+
+# --- AUTO-SEED ROOT ADMIN USER IF MISSING ---
+# We write a quick startup seed block to ensure an admin account always exists
+with SessionLocal() if 'SessionLocal' in globals() else engine.connect() as conn:
+    from app.database import SessionLocal
+    db = SessionLocal()
+    if not db.query(DBUser).filter(DBUser.username == "admin").first():
+        admin_user = DBUser(username="admin", hashed_password=pwd_context.hash("admin123"))
+        db.add(admin_user)
+        db.commit()
+    db.close()
+
+# ... (Keep CORS middleware setups exactly as they are)
+
+# --- REFACTORED AUTHENTICATION ROUTERS ---
+
+@app.post("/token")
+async def login_for_access_token(
+    form_data: OAuth2PasswordRequestForm = Depends(), 
+    db: Session = Depends(get_db)  # <-- Inject database dependency here
+):
+    """Validates login credentials against the persistent SQLite database."""
+    # Look up user inside the physical user table
+    user = db.query(DBUser).filter(DBUser.username == form_data.username).first()
+    
+    if not user or not verify_password(form_data.password, user.hashed_password):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect username or password",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    access_token = create_access_token(data={"sub": user.username})
+    return {"access_token": access_token, "token_type": "bearer"}
+
+async def get_current_user(
+    token: str = Depends(oauth2_scheme),
+    db: Session = Depends(get_db)
+):
+    """Validates token and double-checks the active user still exists in the database table."""
+    try:
+        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
+        username: str = payload.get("sub")
+        if username is None:
+            raise HTTPException(status_code=401, detail="Could not validate credentials")
+            
+        # Verify user still stands inside the formal system
+        user = db.query(DBUser).filter(DBUser.username == username).first()
+        if user is None:
+            raise HTTPException(status_code=401, detail="User database mismatch")
+            
+        return username
+    except jwt.PyJWTError:
+        raise HTTPException(status_code=401, detail="Could not validate credentials")
+
+# ... (Keep your /upload-song/, /stream/, /download/, and /analytics/ summary routes exactly as they are!)
