@@ -283,3 +283,22 @@ async def download_song(
 
 # ... (Leave the remaining analytics summary endpoint code at the bottom completely untouched)
 
+# --- ADD THIS ROUTE INSIDE YOUR MUSIC ENDPOINTS SECTION ---
+
+@app.get("/songs")
+async def get_all_songs():
+    """Scans the storage directory and returns a list of all available audio assets."""
+    if not os.path.exists(settings.SONGS_DIR):
+        return []
+    
+    # Filter the directory to pull only mp3 assets
+    songs = [f for f in os.listdir(settings.SONGS_DIR) if f.endswith(".mp3")]
+    return sorted(songs)
+
+@app.get("/songs")
+async def get_all_songs():
+    """Scans the storage directory and returns a list of all available audio assets."""
+    if not os.path.exists(settings.SONGS_DIR):
+        return []
+    songs = [f for f in os.listdir(settings.SONGS_DIR) if f.endswith(".mp3")]
+    return sorted(songs)

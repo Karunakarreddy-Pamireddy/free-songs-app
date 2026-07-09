@@ -6,3 +6,4 @@ passlib[bcrypt]==1.7.4
 pandas==2.2.2
 streamlit==1.36.0
 python-dotenv==1.0.1
+Flask==3.0.0
