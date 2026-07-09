@@ -1,4 +1,5 @@
 import os
+import json
 from flask import Flask, render_template, request, redirect, url_for, session, flash
 from dotenv import load_dotenv
 
@@ -11,9 +12,19 @@ app.secret_key = os.getenv("SECRET_KEY", "telugu_music_admin_secret")
 ADMIN_USERNAME = os.getenv("MY_USERNAME", "admin")
 ADMIN_PASSWORD = os.getenv("MY_PASSWORD", "admin123")
 
-users_db = {
-    ADMIN_USERNAME: {"password": ADMIN_PASSWORD, "role": "admin"}
-}
+USER_FILE = os.path.join(basedir, "users.json")
+
+def load_users():
+    if os.path.exists(USER_FILE):
+        with open(USER_FILE, "r") as f:
+            return json.load(f)
+    return {ADMIN_USERNAME: {"password": ADMIN_PASSWORD, "role": "admin"}}
+
+def save_users(users):
+    with open(USER_FILE, "w") as f:
+        json.dump(users, f, indent=4)
+
+users_db = load_users()
 
 TELUGU_SONGS = [
     {"id": 1, "title": "Chuttamalle", "movie": "Devara", "artist": "Shreya Ghoshal, Anirudh", "url": "https://archive.org/download/MellaMellaMellagaDaaguduMoothalu/Mella%20Mella%20Mellaga%20Daagudu%20Moothalu.mp3", "cover": "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=500"},
@@ -35,9 +46,10 @@ def login():
         username = request.form.get("username", "").strip()
         password = request.form.get("password", "").strip()
         
-        if username in users_db and users_db[username]["password"] == password:
+        current_users = load_users()
+        if username in current_users and current_users[username]["password"] == password:
             session["user"] = username
-            session["role"] = users_db[username]["role"]
+            session["role"] = current_users[username]["role"]
             return redirect(url_for("index"))
         else:
             flash("Invalid credentials!")
@@ -48,10 +60,12 @@ def register():
     username = request.form.get("username", "").strip()
     password = request.form.get("password", "").strip()
     if username and password:
-        if username in users_db:
+        current_users = load_users()
+        if username in current_users:
             flash("Username already exists!")
         else:
-            users_db[username] = {"password": password, "role": "user"}
+            current_users[username] = {"password": password, "role": "user"}
+            save_users(current_users)
             flash("Registration successful! Please login.")
     return redirect(url_for("login"))
 
@@ -63,8 +77,11 @@ def change_password():
     new_password = request.form.get("new_password", "").strip()
     if new_password:
         username = session["user"]
-        users_db[username]["password"] = new_password
-        flash("Password updated successfully!")
+        current_users = load_users()
+        if username in current_users:
+            current_users[username]["password"] = new_password
+            save_users(current_users)
+            flash("Password updated successfully!")
     return redirect(url_for("index"))
 
 @app.route("/admin")
@@ -72,7 +89,7 @@ def admin_panel():
     if session.get("role") != "admin":
         flash("Access denied! Admin privileges required.")
         return redirect(url_for("index"))
-    return render_template("admin.html", users=users_db, songs=TELUGU_SONGS)
+    return render_template("admin.html", users=load_users(), songs=TELUGU_SONGS)
 
 @app.route("/add_song", methods=["POST"])
 def add_song():
