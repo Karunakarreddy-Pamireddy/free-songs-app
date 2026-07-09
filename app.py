@@ -11,15 +11,20 @@ app.secret_key = os.getenv("SECRET_KEY", "telugu_music_secret_key")
 MY_USERNAME = os.getenv("MY_USERNAME", "karuna")
 MY_PASSWORD = os.getenv("MY_PASSWORD", "MySecretPassword123")
 
-# Updated Telugu Hit Songs Database
 TELUGU_SONGS = [
     {
         "id": 1,
-        "title": "Fear Song",
-        "movie": "Devara",
-        "artist": "Anirudh Ravichander",
+        "title": "Neeve Naa Raani",
+        "movie": "Hrudaya Vedika",
+        "artist": "Tollywood Pop",
         "url": "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3",
-        "cover": "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=300"
+        "cover": "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=300",
+        "lyrics": """Nee navve oka merupula
+Naa gundelo alajadiga
+Prathi kshanam neethone jeevinchina
+Prathi maata premanu panchina
+Oh Prema... naa oohala lokaana
+Neeve naa raani..."""
     },
     {
         "id": 2,
@@ -27,7 +32,11 @@ TELUGU_SONGS = [
         "movie": "Devara",
         "artist": "Shreya Ghoshal",
         "url": "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3",
-        "cover": "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=300"
+        "cover": "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=300",
+        "lyrics": """Chuttamalle suttu muttai cheerakattu
+Gundelona reppalotu allukuttu
+Soodu soodu rangulaata jorugattu
+Aahaa manase aagakunda paatu paatu..."""
     },
     {
         "id": 3,
@@ -35,31 +44,11 @@ TELUGU_SONGS = [
         "movie": "Guntur Kaaram",
         "artist": "Thaman S, Sahithi Chaganti",
         "url": "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3",
-        "cover": "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=300"
-    },
-    {
-        "id": 4,
-        "title": "Pushpa Pushpa",
-        "movie": "Pushpa 2 The Rule",
-        "artist": "Nakash Aziz, DSP",
-        "url": "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3",
-        "cover": "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=300"
-    },
-    {
-        "id": 5,
-        "title": "Sooseki",
-        "movie": "Pushpa 2 The Rule",
-        "artist": "Shreya Ghoshal",
-        "url": "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-5.mp3",
-        "cover": "https://images.unsplash.com/photo-1511379938547-c1f69419868d?w=300"
-    },
-    {
-        "id": 6,
-        "title": "Samayama",
-        "movie": "Hi Nanna",
-        "artist": "Anurag Kulkarni",
-        "url": "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-6.mp3",
-        "cover": "https://images.unsplash.com/photo-1459749411175-04bf5292ceea?w=300"
+        "cover": "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=300",
+        "lyrics": """Kurchi madathapetti...
+Massu step-u vesi kottu beat-u petti
+Aata paata anni inga joru katti
+Raa raa maava chudu crazy setup petti!"""
     }
 ]
 
