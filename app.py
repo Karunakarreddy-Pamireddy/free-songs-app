@@ -18,7 +18,7 @@ TELUGU_SONGS = [
         "movie": "Devara",
         "artist": "Shreya Ghoshal, Anirudh",
         "url": "https://ia800208.us.archive.org/24/items/MellaMellaMellagaDaaguduMoothalu/Mella%20Mella%20Mellaga%20Daagudu%20Moothalu.mp3",
-        "cover": "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=300"
+        "cover": "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=500"
     },
     {
         "id": 2,
@@ -26,7 +26,7 @@ TELUGU_SONGS = [
         "movie": "Guntur Kaaram",
         "artist": "Thaman S, Sahithi Chaganti",
         "url": "https://ia801608.us.archive.org/33/items/087.-priya-cheliya/087.PRIYA%20CHELIYA.mp3",
-        "cover": "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=300"
+        "cover": "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=500"
     },
     {
         "id": 3,
@@ -34,7 +34,7 @@ TELUGU_SONGS = [
         "movie": "Hi Nanna",
         "artist": "Anurag Kulkarni",
         "url": "https://ia800302.us.archive.org/11/items/lp_hits-from-telugu-films-vol-4_various/lp_hits-from-telugu-films-vol-4_various_disc1side1.flac",
-        "cover": "https://images.unsplash.com/photo-1459749411175-04bf5292ceea?w=300"
+        "cover": "https://images.unsplash.com/photo-1459749411175-04bf5292ceea?w=500"
     },
     {
         "id": 4,
@@ -42,7 +42,7 @@ TELUGU_SONGS = [
         "movie": "Devara",
         "artist": "Anirudh Ravichander",
         "url": "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3",
-        "cover": "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=300"
+        "cover": "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=500"
     },
     {
         "id": 5,
@@ -50,7 +50,7 @@ TELUGU_SONGS = [
         "movie": "Pushpa 2 The Rule",
         "artist": "Nakash Aziz, DSP",
         "url": "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-5.mp3",
-        "cover": "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=300"
+        "cover": "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=500"
     }
 ]
 
