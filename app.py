@@ -14,41 +14,42 @@ MY_PASSWORD = os.getenv("MY_PASSWORD", "MySecretPassword123")
 TELUGU_SONGS = [
     {
         "id": 1,
-        "title": "Neeve Naa Raani",
-        "movie": "Hrudaya Vedika",
-        "artist": "Tollywood Pop",
-        "url": "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3",
-        "cover": "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=300",
-        "lyrics": """Nee navve oka merupula
-Naa gundelo alajadiga
-Prathi kshanam neethone jeevinchina
-Prathi maata premanu panchina
-Oh Prema... naa oohala lokaana
-Neeve naa raani..."""
-    },
-    {
-        "id": 2,
         "title": "Chuttamalle",
         "movie": "Devara",
-        "artist": "Shreya Ghoshal",
-        "url": "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3",
+        "artist": "Shreya Ghoshal, Anirudh",
+        "url": "/static/music/chuttamalle.mp3",
         "cover": "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=300",
         "lyrics": """Chuttamalle suttu muttai cheerakattu
 Gundelona reppalotu allukuttu
 Soodu soodu rangulaata jorugattu
-Aahaa manase aagakunda paatu paatu..."""
+Aahaa manase aagakunda paatu paatu...
+Nee chupe oka tana tana
+Naa kalale oka sarigama!"""
     },
     {
-        "id": 3,
+        "id": 2,
         "title": "Kurchi Madathapetti",
         "movie": "Guntur Kaaram",
         "artist": "Thaman S, Sahithi Chaganti",
-        "url": "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3",
+        "url": "/static/music/kurchi.mp3",
         "cover": "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=300",
         "lyrics": """Kurchi madathapetti...
 Massu step-u vesi kottu beat-u petti
 Aata paata anni inga joru katti
-Raa raa maava chudu crazy setup petti!"""
+Raa raa maava chudu crazy setup petti!
+Ee roju manade thaggede le!"""
+    },
+    {
+        "id": 3,
+        "title": "Samayama",
+        "movie": "Hi Nanna",
+        "artist": "Anurag Kulkarni",
+        "url": "/static/music/samayama.mp3",
+        "cover": "https://images.unsplash.com/photo-1459749411175-04bf5292ceea?w=300",
+        "lyrics": """Samayamaa koncham aagumaa
+Nee payanam aapumaa...
+Ivala kalisaa nenu tanani
+Gundello preme nindi paarenaa!"""
     }
 ]
 
@@ -68,7 +69,7 @@ def login():
             session["user"] = username
             return redirect(url_for("index"))
         else:
-            flash(f"Invalid login! Attempted: '{username}'")
+            flash("Invalid login credentials!")
             
     return render_template("login.html")
 
