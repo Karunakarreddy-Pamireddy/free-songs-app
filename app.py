@@ -15,48 +15,12 @@ users_db = {
     ADMIN_USERNAME: {"password": ADMIN_PASSWORD, "role": "admin"}
 }
 
-# Accurate Mapping to Local Vocal Tracks
 TELUGU_SONGS = [
-    {
-        "id": 1, 
-        "title": "Chuttamalle", 
-        "movie": "Devara", 
-        "artist": "Shreya Ghoshal, Anirudh", 
-        "url": "/static/music/chuttamalle.mp3", 
-        "cover": "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=500"
-    },
-    {
-        "id": 2, 
-        "title": "Kurchi Madathapetti", 
-        "movie": "Guntur Kaaram", 
-        "artist": "Thaman S, Sahithi", 
-        "url": "/static/music/kurchi.mp3", 
-        "cover": "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=500"
-    },
-    {
-        "id": 3, 
-        "title": "Samayama", 
-        "movie": "Hi Nanna", 
-        "artist": "Anurag Kulkarni", 
-        "url": "/static/music/samayama.mp3", 
-        "cover": "https://images.unsplash.com/photo-1459749411175-04bf5292ceea?w=500"
-    },
-    {
-        "id": 4, 
-        "title": "Fear Song", 
-        "movie": "Devara", 
-        "artist": "Anirudh Ravichander", 
-        "url": "/static/music/fearsong.mp3", 
-        "cover": "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=500"
-    },
-    {
-        "id": 5, 
-        "title": "Pushpa Pushpa", 
-        "movie": "Pushpa 2 The Rule", 
-        "artist": "Nakash Aziz, DSP", 
-        "url": "/static/music/pushpa.mp3", 
-        "cover": "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=500"
-    }
+    {"id": 1, "title": "Chuttamalle", "movie": "Devara", "artist": "Shreya Ghoshal, Anirudh", "url": "https://archive.org/download/MellaMellaMellagaDaaguduMoothalu/Mella%20Mella%20Mellaga%20Daagudu%20Moothalu.mp3", "cover": "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=500"},
+    {"id": 2, "title": "Kurchi Madathapetti", "movie": "Guntur Kaaram", "artist": "Thaman S, Sahithi", "url": "https://archive.org/download/NaaPaataNeeNotaMoogaManasulo1964/Naa_Paata_Nee_Nota-Mooga_Manasulo%281964%29-%5Ba2z3gp.com%5D.mp3", "cover": "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=500"},
+    {"id": 3, "title": "Samayama", "movie": "Hi Nanna", "artist": "Anurag Kulkarni", "url": "https://archive.org/download/NaaPaataNeeNotaMoogaManasulo1964/Naa_Rani_Kanulalone.mp3", "cover": "https://images.unsplash.com/photo-1459749411175-04bf5292ceea?w=500"},
+    {"id": 4, "title": "Fear Song", "movie": "Devara", "artist": "Anirudh Ravichander", "url": "https://archive.org/download/NaaPaataNeeNotaMoogaManasulo1964/Naa_Manasu_Nee_Manasu_Okatai-CID%281965%29-%5Ba2z3gp.com%5D.mp3", "cover": "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=500"},
+    {"id": 5, "title": "Pushpa Pushpa", "movie": "Pushpa 2 The Rule", "artist": "Nakash Aziz, DSP", "url": "https://archive.org/download/pict_20221110_202211/A1%20-%20Jikki%20-%20Yeruvaaka.mp3", "cover": "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=500"}
 ]
 
 @app.route("/")
