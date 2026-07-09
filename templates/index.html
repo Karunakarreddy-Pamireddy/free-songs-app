@@ -2,102 +2,63 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Telugu Hit Songs - Free Songs App</title>
+    <title>Telugu Beats Dashboard</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
         body { background: #0f0f12; color: #ffffff; padding: 20px 40px; min-height: 100vh; }
         
-        /* Header Styling */
-        header { 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            padding: 20px 30px; 
-            background: linear-gradient(135deg, #18181c, #101014); 
-            border-radius: 16px; 
-            box-shadow: 0 8px 32px rgba(0,0,0,0.5); 
-            border: 1px solid rgba(255,255,255,0.05); 
-            margin-bottom: 35px; 
-        }
-        .logo { font-size: 1.8rem; font-weight: 700; color: #1DB954; display: flex; align-items: center; gap: 10px; }
-        .user-profile { font-size: 0.95rem; color: #a7a7a7; display: flex; align-items: center; gap: 15px; }
-        .user-profile strong { color: #fff; font-weight: 600; }
-        .logout-btn { 
-            background: rgba(255, 77, 77, 0.15); 
-            color: #ff4d4d; 
-            padding: 8px 16px; 
-            border-radius: 20px; 
-            text-decoration: none; 
-            font-size: 0.85rem; 
-            font-weight: 600; 
-            transition: all 0.3s ease; 
-        }
-        .logout-btn:hover { background: #ff4d4d; color: #fff; box-shadow: 0 0 12px rgba(255,77,77,0.4); }
+        header { display: flex; justify-content: space-between; align-items: center; padding: 20px 30px; background: #18181e; border-radius: 16px; margin-bottom: 30px; }
+        .logo { font-size: 1.8rem; font-weight: 700; color: #1DB954; }
+        .nav-right { display: flex; align-items: center; gap: 15px; }
+        .btn { padding: 8px 16px; border-radius: 20px; text-decoration: none; font-size: 0.85rem; font-weight: 600; border: none; cursor: pointer; }
+        .admin-btn { background: #1DB954; color: #000; }
+        .logout-btn { background: rgba(255, 77, 77, 0.2); color: #ff4d4d; }
 
-        /* Song Cards Grid */
-        .grid-container { 
-            display: grid; 
-            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); 
-            gap: 25px; 
-        }
-        
-        .song-card { 
-            background: #18181e; 
-            padding: 16px; 
-            border-radius: 14px; 
-            border: 1px solid rgba(255,255,255,0.05); 
-            transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease; 
-            display: flex; 
-            flex-direction: column; 
-            justify-content: space-between; 
-        }
-        .song-card:hover { 
-            transform: translateY(-8px); 
-            box-shadow: 0 12px 24px rgba(29, 185, 84, 0.2); 
-            border-color: rgba(29, 185, 84, 0.4); 
-        }
-        
-        .cover-wrapper { position: relative; width: 100%; height: 200px; border-radius: 10px; overflow: hidden; margin-bottom: 15px; }
+        .pw-section { background: #18181e; padding: 15px 25px; border-radius: 12px; margin-bottom: 30px; display: flex; align-items: center; gap: 15px; }
+        .pw-section input { padding: 8px 12px; border-radius: 6px; border: 1px solid #333; background: #222; color: #fff; }
+
+        .grid-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 25px; }
+        .song-card { background: #18181e; padding: 16px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.05); display: flex; flex-direction: column; justify-content: space-between; }
+        .cover-wrapper { width: 100%; height: 180px; border-radius: 10px; overflow: hidden; margin-bottom: 12px; }
         .cover-wrapper img { width: 100%; height: 100%; object-fit: cover; }
-        
-        .song-title { font-size: 1.1rem; font-weight: 600; color: #fff; margin-bottom: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-        .song-meta { font-size: 0.85rem; color: #a7a7a7; margin-bottom: 15px; }
-        .song-meta span { color: #1DB954; font-weight: 500; }
-        
-        /* Custom Audio Player */
-        audio { 
-            width: 100%; 
-            height: 40px; 
-            border-radius: 30px; 
-            filter: invert(0.9) hue-rotate(90deg); 
-            outline: none; 
-        }
+        .song-title { font-size: 1.05rem; font-weight: 600; margin-bottom: 4px; }
+        .song-meta { font-size: 0.85rem; color: #a7a7a7; margin-bottom: 12px; }
+        audio { width: 100%; height: 40px; filter: invert(0.9) hue-rotate(90deg); }
     </style>
 </head>
 <body>
     <header>
         <div class="logo">🎵 Telugu Beats</div>
-        <div class="user-profile">
-            <span>Welcome back, <strong>{{ user }}</strong></span>
-            <a href="/logout" class="logout-btn">Logout</a>
+        <div class="nav-right">
+            <span>Welcome, <strong>{{ user }}</strong></span>
+            {% if is_admin %}
+                <a href="/admin" class="btn admin-btn">⚙️ Admin Panel</a>
+            {% endif %}
+            <a href="/logout" class="btn logout-btn">Logout</a>
         </div>
     </header>
+
+    <div class="pw-section">
+        <span style="font-size: 0.9rem; color: #aaa;">🔑 Change Password:</span>
+        <form method="POST" action="/change_password" style="display: flex; gap: 10px;">
+            <input type="password" name="new_password" placeholder="New Password" required>
+            <button type="submit" class="btn admin-btn">Update</button>
+        </form>
+    </div>
 
     <div class="grid-container">
         {% for song in songs %}
         <div class="song-card">
             <div class="cover-wrapper">
-                <img src="{{ song.cover }}" alt="{{ song.title }} Cover">
+                <img src="{{ song.cover }}" alt="Cover">
             </div>
-            <div class="song-info">
+            <div>
                 <div class="song-title">{{ song.title }}</div>
-                <div class="song-meta"><span>{{ song.movie }}</span> • {{ song.artist }}</div>
+                <div class="song-meta"><span style="color:#1DB954;">{{ song.movie }}</span> • {{ song.artist }}</div>
             </div>
             <audio controls preload="metadata">
                 <source src="{{ song.url }}" type="audio/mpeg">
-                Your browser does not support the audio tag.
             </audio>
         </div>
         {% endfor %}
